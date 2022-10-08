@@ -1,0 +1,27 @@
+- hosts: host
+  become: yes
+  tasks:
+    - name: Install ipmitool package
+      package:
+        name: ipmitool
+        state: present
+    
+    - name: Copy exchange-bmc-os-info files
+      copy:
+        src: "{{item.src}}"
+        dest: "{{item.dest}}"
+        owner: "{{item.owner}}"
+        group: "{{item.group}}"
+        mode: "{{item.mode}}"
+        backup: yes
+      loop:
+        - { src: "./exchange-bmc-os-info/exchange-bmc-os-info", dest: "/usr/libexec/exchange-bmc-os-info", owner: "root", group: "root", mode: "755" }
+        - { src: "./exchange-bmc-os-info/exchange-bmc-os-info.service", dest: "/etc/systemd/system/exchange-bmc-os-info.service", owner: "root", group: "root", mode: "644" }
+        - { src: "./exchange-bmc-os-info/exchange-bmc-os-info.conf", dest: "/etc/default/exchange-bmc-os-info", owner: "root", group: "root", mode: "644" }
+    
+    - name: Start and Enable exchange-bmc-os-info service
+      systemd:
+        daemon_reload: true
+        name: exchange-bmc-os-info.service
+        state: started
+        enabled: yes
